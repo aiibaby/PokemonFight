@@ -4,25 +4,33 @@ import CustomText from "../CustomText";
 
 import { Entypo } from "@expo/vector-icons";
 
-// todo: import Redux packages
+import { connect } from "react-redux";
+
+import { selectPokemon, setPokemon, setMove } from "../../actions"
 
 // todo: import actions
 
-const PokemonOption = ({ pokemon_data, is_selected, action_type }) => {
+const PokemonOption = ({  
+  pokemon_data,
+  is_selected,
+  action_type,
+  togglePokemon,
+  setPokemon,
+  backToMove }) => {
   let compact = action_type == "select-pokemon" ? false : true;
   let marginTop = compact ? {} : { marginTop: 20 };
   let imageStyle = compact ? { width: 40 } : { width: 60 };
 
-  const { label, sprite } = pokemon_data; // todo: extract id
+  const { id, label, sprite } = pokemon_data; // todo: extract id
 
   return (
     <TouchableOpacity
       onPress={() => {
         if (action_type == "select-pokemon") {
-          // todo: dispatch action for adding clicked Pokemon to the team
+          togglePokemon(id, pokemon_data, is_selected)
         } else if (action_type == "switch-pokemon") {
-          // todo: dispatch action for setting message for message box
-          // todo: dispatch action for setting current Pokemon
+          setPokemon(pokemon_data); // use the pokemon data passed from the PokemonList component
+          backToMove();
         }
       }}
     >
@@ -50,6 +58,22 @@ const styles = {
   }
 };
 
-// todo: add mapDispatchToProps (backToMove, togglePokemon, setPokemon, setMessage, setMove)
+const mapDispatchToProps = dispatch => {
+  return {
+    togglePokemon: (id, pokemon_data, is_selected) => {
+      dispatch(selectPokemon(id, pokemon_data, is_selected));
+    },
+    setPokemon: pokemon => {
+      dispatch(setPokemon(pokemon)); // for setting the current Pokemon
+    },
+    backToMove: () => {
+      dispatch(setMove("select-move")); // for showing the initial controls UI (the Fight or Switch buttons)
+    }
+  };
+};
 
-export default PokemonOption; // todo: convert component into a connected component
+export default connect(
+  null,
+  mapDispatchToProps
+)(PokemonOption);
+

@@ -1,14 +1,23 @@
 import React from "react";
 import { TouchableOpacity, FlatList } from "react-native";
 import CustomText from "../CustomText";
+import { connect } from "react-redux";
+import {
+  setOpponentPokemonHealth, // for setting the current opponent Pokemon's health
+  removePokemonFromOpponentTeam, // for removing the current opponent Pokemon from the opponent team
+  setOpponentPokemon, // for setting the current opponent Pokemon after the previous one has fainted
+  setMove // for going back to the initial controls UI after the opponent Pokemon has fainted
+} from "../../actions";
+import getMoveEffectivenessAndDamage from "../../helpers/getMoveEffectivenessAndDamage";
 
-// todo: import Redux packages
-// todo: import actions
-// todo: import helper functions
 
 const MovesList = ({
-  moves
-  // access props that were set using mapStateToProps
+  moves,
+  opponent_pokemon,
+  setOpponentPokemonHealth,
+  removePokemonFromOpponentTeam,
+  setOpponentPokemon,
+  setMove
 }) => {
   return (
     <FlatList
@@ -20,14 +29,18 @@ const MovesList = ({
         <TouchableOpacity
           style={styles.container}
           onPress={() => {
-            /*
-            todo:
-            - dispatch action for setting message to display in the message box
-            - dispatch action for updating the health of the opponent's current Pokemon
-            - if opponent Pokemon's health goes below 1, dispatch action for removing opponent's current Pokemon from their team
-            */
-          }}
-        >
+            let { damage } = getMoveEffectivenessAndDamage(item, opponent_pokemon);
+            let health = opponent_pokemon.current_hp - damage;
+      
+            setOpponentPokemonHealth(opponent_pokemon.team_member_id, health); // update the opponent Pokemon's health
+      
+            if (health < 1) { // opponent Pokemon has fainted
+              removePokemonFromOpponentTeam(opponent_pokemon.team_member_id);
+      
+              setMove("select-move"); // go back to the initial controls UI
+              setOpponentPokemon(); // set the opponent Pokemon (if there's still one left)
+            }
+          }}>
           <CustomText styles={styles.label}>{item.title}</CustomText>
         </TouchableOpacity>
       )}
@@ -52,15 +65,34 @@ const styles = {
   }
 };
 
-// todo: add mapStateToProps (opponent_team, pokemon, opponent_pokemon)
+const mapStateToProps = ({ battle }) => {
+  const { opponent_pokemon } = battle;
 
-/*
-todo: add mapDispatchToProps:
-  - setOpponentPokemonHealth
-  - removePokemonFromOpponentTeam
-  - setOpponentPokemon
-  - setMessage
-  - setMove
-*/
+  return {
+    opponent_pokemon
+  };
+};
 
-export default MovesList; // todo: convert the component into a connected component
+const mapDispatchToProps = dispatch => {
+  return {
+    setOpponentPokemonHealth: (team_member_id, health) => {
+      dispatch(setOpponentPokemonHealth(team_member_id, health));
+    },
+
+    removePokemonFromOpponentTeam: team_member_id => {
+      dispatch(removePokemonFromOpponentTeam(team_member_id));
+    },
+
+    setOpponentPokemon: () => {
+      dispatch(setOpponentPokemon());
+    },
+    setMove: move => {
+      dispatch(setMove(move));
+    }
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MovesList);
