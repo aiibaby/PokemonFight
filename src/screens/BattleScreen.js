@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, TouchableOpacity, Alert } from "react-native";
+import { View, TouchableOpacity, Alert, Image } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -114,6 +114,10 @@ class BattleScreen extends Component {
     return (
       <View style={styles.container}>
         <CustomText styles={[styles.headerText]}>Fight!</CustomText>
+        <Image 
+          source={require('../assets/images/background/bg1.jpg')}
+          style={{width: 100, height: 50}}
+        ></Image>
         <View style={styles.battleGround}>
           {opponent_pokemon && (
             <View style={styles.opponent}>
