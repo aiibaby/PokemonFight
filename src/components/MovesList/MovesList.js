@@ -6,7 +6,8 @@ import {
   setOpponentPokemonHealth, // for setting the current opponent Pokemon's health
   removePokemonFromOpponentTeam, // for removing the current opponent Pokemon from the opponent team
   setOpponentPokemon, // for setting the current opponent Pokemon after the previous one has fainted
-  setMove // for going back to the initial controls UI after the opponent Pokemon has fainted
+  setMove, // for going back to the initial controls UI after the opponent Pokemon has fainted
+  setMessage
 } from "../../actions";
 import getMoveEffectivenessAndDamage from "../../helpers/getMoveEffectivenessAndDamage";
 
@@ -17,7 +18,11 @@ const MovesList = ({
   setOpponentPokemonHealth,
   removePokemonFromOpponentTeam,
   setOpponentPokemon,
-  setMove
+  setMove,
+  pokemon,
+  opponent_channel,
+  backtoMove,
+  setMessage
 }) => {
   return (
     <FlatList
@@ -29,17 +34,30 @@ const MovesList = ({
         <TouchableOpacity
           style={styles.container}
           onPress={() => {
-            let { damage } = getMoveEffectivenessAndDamage(item, opponent_pokemon);
+            let { damage, effectiveness } = getMoveEffectivenessAndDamage(item, opponent_pokemon);
             let health = opponent_pokemon.current_hp - damage;
+
+            let message = `${pokemon.label} used ${item.title}! ${effectiveness}`;
+
+            setMessage(message)
+
+            opponents_channel.trigger("client-pokemon-attacked", {
+              team_member_id: opponent_pokemon.team_member_id,
+              message: message,
+              health: health
+            });
       
             setOpponentPokemonHealth(opponent_pokemon.team_member_id, health); // update the opponent Pokemon's health
       
             if (health < 1) { // opponent Pokemon has fainted
+              setOpponentPokemonHealth(opponent_pokemon.team_member_id, 0); // set health to zero so health bar is not all red
               removePokemonFromOpponentTeam(opponent_pokemon.team_member_id);
-      
-              setMove("select-move"); // go back to the initial controls UI
-              setOpponentPokemon(); // set the opponent Pokemon (if there's still one left)
             }
+            setTimeout(() => {
+              setMessage("Please wait for your turn...");
+              setMove("wait-for-turn");
+            }, 1500);
+
           }}>
           <CustomText styles={styles.label}>{item.title}</CustomText>
         </TouchableOpacity>
@@ -66,10 +84,11 @@ const styles = {
 };
 
 const mapStateToProps = ({ battle }) => {
-  const { opponent_pokemon } = battle;
+  const { opponent_pokemon, pokemon} = battle;
 
   return {
-    opponent_pokemon
+    opponent_pokemon,
+    pokemon
   };
 };
 
@@ -88,6 +107,12 @@ const mapDispatchToProps = dispatch => {
     },
     setMove: move => {
       dispatch(setMove(move));
+    },
+    backtoMove: () => {
+      dispatch(setMove("select-move"));
+    },
+    setMessage: message => {
+      dispatch(setMessage(message));
     }
   };
 };
