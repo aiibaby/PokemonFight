@@ -140,41 +140,6 @@ class BattleScreen extends Component {
     });
 
 
-    // let random_pokemon_ids = [];
-    // for (let x = 0; x <= 5; x++) {
-    //   random_pokemon_ids.push(randomInt(1, 54));
-    // }
-
-    // let opposing_team = pokemon_data.filter(item => {
-    //   return random_pokemon_ids.indexOf(item.id) !== -1;
-    // });
-
-    // opposing_team = opposing_team.map(item => {
-    //   let hp = 500;
-
-    //   let shuffled_moves = shuffleArray(item.moves);
-    //   let selected_moves = shuffled_moves.slice(0, 4);
-
-    //   let moves = moves_data.filter(item => {
-    //     return selected_moves.indexOf(item.id) !== -1;
-    //   });
-
-    //   let member_id = uniqid();
-
-    //   return {
-    //     ...item,
-    //     team_member_id: member_id,
-    //     current_hp: hp,
-    //     total_hp: hp,
-    //     moves: moves,
-    //     is_selected: false
-    //   };
-    // });
-
-    // // update the store with the opponent team and current opponent Pokemon
-    // setOpponentTeam(opposing_team);
-    // setOpponentPokemon(opposing_team[0]);
-
   
     // todo: get reference to Pusher connection from navigation param
 
@@ -304,7 +269,9 @@ class BattleScreen extends Component {
 
           {pokemon && this.opponents_channel &&
             move == "select-pokemon-move" && (
-              <MovesList moves={pokemon.moves} />
+              <MovesList moves={pokemon.moves} 
+              opponents_channel={this.opponents_channel}
+              />
             )}
         </View>
       </View>

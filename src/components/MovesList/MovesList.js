@@ -20,7 +20,7 @@ const MovesList = ({
   setOpponentPokemon,
   setMove,
   pokemon,
-  opponent_channel,
+  opponents_channel,
   backtoMove,
   setMessage
 }) => {

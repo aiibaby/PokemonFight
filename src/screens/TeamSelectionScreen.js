@@ -9,10 +9,10 @@ import ActionList from "../components/ActionList";
 import { connect } from "react-redux";
 import { setTeam, setPokemon } from "../actions";
 import moves_data from "../data/moves_data"
-// todo: import helper functions
 
 import uniqid from "../helpers/uniqid";
 import shuffleArray from "../helpers/shuffleArray";
+
 
 class TeamSelectionScreen extends Component {
   static navigationOptions = {
@@ -104,7 +104,7 @@ class TeamSelectionScreen extends Component {
     const username = navigation.getParam("username"); // get the username passed from the login screen
 
     this.pusher = new Pusher("34e87c06e0771c12f0e4", {
-      authEndpoint: "https://2a836c47.ngrok.io/pusher/auth",
+      authEndpoint: "https://14f8f19e.ngrok.io/pusher/auth",
       cluster: "us3",
       encrypted: true,
       auth: {
