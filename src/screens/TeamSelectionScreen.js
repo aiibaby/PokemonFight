@@ -34,7 +34,7 @@ class TeamSelectionScreen extends Component {
       <View style={styles.container}>
         <CustomText styles={[styles.headerText]}>Select your team</CustomText>
 
-        {selected_pokemon.length == 6 && (
+        {selected_pokemon.length == 3 && (
           <View>
             {this.state.is_loading && (
               <View style={styles.loadingContainer}>
@@ -104,7 +104,7 @@ class TeamSelectionScreen extends Component {
     const username = navigation.getParam("username"); // get the username passed from the login screen
 
     this.pusher = new Pusher("34e87c06e0771c12f0e4", {
-      authEndpoint: "https://14f8f19e.ngrok.io/pusher/auth",
+      authEndpoint: "https://e4e2d0c2.ngrok.io/pusher/auth",
       cluster: "us3",
       encrypted: true,
       auth: {

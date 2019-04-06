@@ -132,10 +132,13 @@ class BattleScreen extends Component {
 
         }, 1000);
 
-        // let the user select the Pokemon to switch to
+        // if (sorted_opponent_team.length == 0 || data.team._member_ids.length === 0) {
+        //   setMessage("Game Over")
+        // } else {
         setTimeout(() => {
           setMove("select-pokemon");
         }, 2000);
+        // }
       }
     });
 
