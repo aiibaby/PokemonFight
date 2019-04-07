@@ -37,13 +37,17 @@ class BattleScreen extends Component {
   constructor(props) {
     super(props);
     this.opponents_channel = null;
+    this.state = {
+      opponent_pokemon_teams: [],
+      my_username: ""
+    }
   }
+
 
   async componentDidMount() {
     const {
       setOpponentTeam,
       setOpponentPokemon,
-
       navigation,
       team,
       setMove,
@@ -53,6 +57,7 @@ class BattleScreen extends Component {
       removePokemonFromTeam
     } = this.props;
     let pusher = navigation.getParam("pusher");
+    const my_username = navigation.getParam("username")
 
     const { username, pokemon_ids, team_member_ids } = navigation.getParam(
       "opponent"
@@ -95,6 +100,10 @@ class BattleScreen extends Component {
 
     setOpponentTeam(sorted_opponent_team);
     setOpponentPokemon(sorted_opponent_team[0]);
+    this.setState({
+      opponent_pokemon_teams: sorted_opponent_team,
+      my_username: my_username
+    })
 
     this.opponents_channel = pusher.subscribe(`private-user-${username}`);
     this.opponents_channel.bind("pusher:subscription_error", status => {
@@ -147,10 +156,28 @@ class BattleScreen extends Component {
           setMessage(`${fainted_pokemon.label} fainted`);
           removePokemonFromTeam(data.team_member_id);
         }, 1000);
-
-        setTimeout(() => {
-          setMove("select-pokemon");
-        }, 2000);
+        team.splice(0, 1);
+        if (team.length == 0) {
+          Alert.alert(
+            "Game Over!",
+            "You loss!",
+            [
+              {
+                text: 'Play Again',
+                onPress: () => navigation.navigate("Login", {
+                  username: my_username
+                }),
+                style: 'cancel',
+              },
+              {text: 'Back to Home Page', onPress: () => navigation.navigate("Login")},
+            ],
+            { cancelable: false}
+          );
+        } else {
+          setTimeout(() => {
+            setMove("select-pokemon");
+          }, 2000);
+        }
       }
     });
   }
@@ -163,7 +190,7 @@ class BattleScreen extends Component {
       pokemon,
       opponent_pokemon,
       backToMove,
-
+      navigation,
       message
     } = this.props;
 
@@ -249,6 +276,9 @@ class BattleScreen extends Component {
               <MovesList
                 moves={pokemon.moves}
                 opponents_channel={this.opponents_channel}
+                opponent_pokemon_teams={this.state.opponent_pokemon_teams}
+                myusername={this.state.my_username}
+                navigation={this.props.navigation}
               />
             )}
         </View>
@@ -265,7 +295,6 @@ const mapStateToProps = ({ battle }) => {
     pokemon,
     opponent_team,
     opponent_pokemon,
-
     message
   } = battle;
   return {

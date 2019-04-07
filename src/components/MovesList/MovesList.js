@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity, FlatList } from "react-native";
+import { TouchableOpacity, FlatList, Alert} from "react-native";
 import CustomText from "../CustomText";
 import { connect } from "react-redux";
 import {
@@ -15,13 +15,16 @@ import getMoveEffectivenessAndDamage from "../../helpers/getMoveEffectivenessAnd
 const MovesList = ({
   moves,
   opponent_pokemon,
+  opponent_pokemon_teams,
   setOpponentPokemonHealth,
   removePokemonFromOpponentTeam,
+  myusername,
   setOpponentPokemon,
   setMove,
   pokemon,
   opponents_channel,
   backtoMove,
+  navigation,
   setMessage
 }) => {
   return (
@@ -38,7 +41,6 @@ const MovesList = ({
             let health = opponent_pokemon.current_hp - damage;
 
             let message = `${pokemon.label} used ${item.title}! ${effectiveness}`;
-
             setMessage(message)
 
             opponents_channel.trigger("client-pokemon-attacked", {
@@ -46,18 +48,38 @@ const MovesList = ({
               message: message,
               health: health
             });
+
       
             setOpponentPokemonHealth(opponent_pokemon.team_member_id, health); // update the opponent Pokemon's health
       
             if (health < 1) { // opponent Pokemon has fainted
               setOpponentPokemonHealth(opponent_pokemon.team_member_id, 0); // set health to zero so health bar is not all red
               removePokemonFromOpponentTeam(opponent_pokemon.team_member_id);
+              opponent_pokemon_teams.splice(0, 1)
             }
-            setTimeout(() => {
-              setMessage("Please wait for your turn...");
-              setMove("wait-for-turn");
-            }, 1500);
 
+            if (opponent_pokemon_teams.length == 0) {
+              Alert.alert(
+                "Game Over!",
+                "You Win!",
+                [
+                  {
+                    text: 'Play Again',
+                    onPress: () => navigation.navigate("Login", {
+                      username: myusername
+                    }),
+                    style: 'cancel',
+                  },
+                  {text: 'Back to Home Page', onPress: () => navigation.navigate("Login")},
+                ],
+                { cancelable: false}
+              );
+            } else {
+              setTimeout(() => {
+                setMessage("Please wait for your turn...");
+                setMove("wait-for-turn");
+              }, 1500);
+            }
           }}>
           <CustomText styles={styles.label}>{item.title}</CustomText>
         </TouchableOpacity>
@@ -88,7 +110,7 @@ const mapStateToProps = ({ battle }) => {
 
   return {
     opponent_pokemon,
-    pokemon
+    pokemon,
   };
 };
 
