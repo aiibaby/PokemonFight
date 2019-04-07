@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { View, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import Pusher from "pusher-js/react-native";
 
 import CustomText from "../components/CustomText";
 import PokemonList from "../components/PokemonList";
@@ -8,10 +9,10 @@ import ActionList from "../components/ActionList";
 import { connect } from "react-redux";
 import { setTeam, setPokemon } from "../actions";
 import moves_data from "../data/moves_data"
-// todo: import helper functions
 
 import uniqid from "../helpers/uniqid";
 import shuffleArray from "../helpers/shuffleArray";
+
 
 class TeamSelectionScreen extends Component {
   static navigationOptions = {
@@ -21,6 +22,11 @@ class TeamSelectionScreen extends Component {
   state = {
     is_loading: false
   };
+  constructor(props) {
+    super(props);
+    this.pusher = null;
+    this.my_channel = null;
+  }
 
   render() {
     const { selected_pokemon } = this.props;
@@ -28,7 +34,7 @@ class TeamSelectionScreen extends Component {
       <View style={styles.container}>
         <CustomText styles={[styles.headerText]}>Select your team</CustomText>
 
-        {selected_pokemon.length == 6 && (
+        {selected_pokemon.length == 1 && (
           <View>
             {this.state.is_loading && (
               <View style={styles.loadingContainer}>
@@ -62,6 +68,8 @@ class TeamSelectionScreen extends Component {
     const { selected_pokemon, setTeam, setPokemon, navigation} = this.props;
 
     let team = selected_pokemon.slice(0); // the array which stores the data for the Pokemon team selected by the user
+    let pokemon_ids = [];
+    let team_member_ids = [];
     team = team.map(item => {
       let hp = 500;
       let shuffled_moves = shuffleArray(item.moves);
@@ -72,6 +80,9 @@ class TeamSelectionScreen extends Component {
       });
 
       let member_id = uniqid();
+
+      pokemon_ids.push(item.id);
+      team_member_ids.push(member_id);
 
       return {
         ...item,
@@ -90,19 +101,62 @@ class TeamSelectionScreen extends Component {
       is_loading: true // show activity indicator
     });
 
-    setTimeout(() => {
-      const username = navigation.getParam("username");
+    const username = navigation.getParam("username"); // get the username passed from the login screen
 
-      this.setState({
-        is_loading: false
-      });
+    this.pusher = new Pusher("34e87c06e0771c12f0e4", {
+      authEndpoint: "https://d45dc7ae.ngrok.io/pusher/auth",
+      cluster: "us3",
+      encrypted: true,
+      auth: {
+        params: {
+          username: username,
+          pokemon_ids: pokemon_ids,
+          team_member_ids: team_member_ids
+        }
+      }
+    });
 
+    this.my_channel = this.pusher.subscribe(`private-user-${username}`);
+    this.my_channel.bind("pusher:subscription_error", status => {
+      Alert.alert(
+        "Error",
+        "Subscription error occurred. Please restart the app"
+      );
+    });
+
+    this.my_channel.bind("pusher:subscription_succeeded", data => {
+      this.my_channel.bind("opponent-found", data => {
+        let opponent =
+          username == data.player_one.username
+            ? data.player_two // object containing player two's data
+            : data.player_one; // object containing player one's data
+
+        let first_turn =
+          username == data.player_one.username
+            ? "you"
+            : data.player_two.username;
+
+        Alert.alert(
+          "Opponent found!",
+          `${
+            opponent.username
+          } will take you on! First turn goes to ${first_turn}`
+        );
+
+        this.setState({
+          is_loading: false,
+          username: ""
+        });
       navigation.navigate("Battle", {
-        username: username
+        pusher: this.pusher,
+        username: username,
+        opponent: opponent,
+        my_channel: this.my_channel,
+        first_turn: first_turn
       });
-    }, 2500); 
-  };
-}
+    });
+  });
+}}
 
 const mapStateToProps = ({ team_selection }) => {
   const { pokemon, selected_pokemon } = team_selection;

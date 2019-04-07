@@ -1,6 +1,7 @@
-import { TEAM_SET, CURRENT_POKEMON_SET, SET_OPPONENT_TEAM, SET_MOVE, SET_OPPONENT_POKEMON, SET_OPPONENT_POKEMON_HEALTH, REMOVE_POKEMON_FROM_OPPONENT_TEAM} from "../actions/types";
+import { TEAM_SET, CURRENT_POKEMON_SET, SET_OPPONENT_TEAM, SET_MOVE, SET_OPPONENT_POKEMON, SET_OPPONENT_POKEMON_HEALTH, REMOVE_POKEMON_FROM_OPPONENT_TEAM, SET_POKEMON_HEALTH, SET_MESSAGE, REMOVE_POKEMON_FROM_TEAM} from "../actions/types";
 
 const move_display_text = {
+    "wait-for-turn": "",
     "select-move": "Select your move", // main menu (choose whether to attack or switch)
     "select-pokemon": "Which Pokemon will you use?", // choose another Pokemon from team
     "select-pokemon-move": "Which attack will you use?" // choose a move by their current Pokemon
@@ -14,7 +15,8 @@ const INITIAL_STATE = {
     move: default_move,
     move_display_text: move_display_text[default_move],
     opponent_team: [],
-    opponent_pokemon: null // currently selected pokemon by opponent 
+    opponent_pokemon: null, // currently selected pokemon by opponent
+    message: "" 
 };
 
 export default (state = INITIAL_STATE, action) => {
@@ -56,6 +58,26 @@ export default (state = INITIAL_STATE, action) => {
                 return item.team_member_id != action.team_member_id;
             });
             return { ...state, opponent_team: diminished_opponent_team };
+
+        case SET_POKEMON_HEALTH: // updates the current_hp of the Pokemon with the team_member_id specified in the action
+            let team_data = [...state.team];
+            team_data = team_data.map(item => {
+                if (item.team_member_id == action.team_member_id) {
+                item.current_hp = action.health;
+                }
+                return item;
+            });
+            return {...state, team: team_data}
+        
+        case SET_MESSAGE: // sets the message to display in place of the controls
+            return { ...state, move: "wait-for-turn", message: action.message };
+
+        case REMOVE_POKEMON_FROM_TEAM: // removes the Pokemon with the specified team_member_id from the team
+            const diminished_team = [...state.team].filter(item => {
+                return item.team_member_id != action.team_member_id;
+            });
+
+            return {...state, team: diminished_team}
         
         default:
             return state;

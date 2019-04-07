@@ -9,7 +9,7 @@ const PokemonList = ({
   numColumns,
   scrollEnabled,
   action_type,
-  opponents_channel
+  opponents_channel,
 }) => {
   return (
     <FlatList

@@ -6,7 +6,7 @@ import { Entypo } from "@expo/vector-icons";
 
 import { connect } from "react-redux";
 
-import { selectPokemon, setPokemon, setMove } from "../../actions"
+import { selectPokemon, setPokemon, setMove, setMessage} from "../../actions"
 
 // todo: import actions
 
@@ -16,12 +16,16 @@ const PokemonOption = ({
   action_type,
   togglePokemon,
   setPokemon,
-  backToMove }) => {
+  backToMove,
+  setMessage,
+  setMove,
+  opponents_channel 
+}) => {
   let compact = action_type == "select-pokemon" ? false : true;
   let marginTop = compact ? {} : { marginTop: 20 };
   let imageStyle = compact ? { width: 40 } : { width: 60 };
 
-  const { id, label, sprite } = pokemon_data; // todo: extract id
+  const { id, label, sprite } = pokemon_data;
 
   return (
     <TouchableOpacity
@@ -30,7 +34,13 @@ const PokemonOption = ({
           togglePokemon(id, pokemon_data, is_selected)
         } else if (action_type == "switch-pokemon") {
           setPokemon(pokemon_data); // use the pokemon data passed from the PokemonList component
-          backToMove();
+          opponents_channel.trigger("client-switched-pokemon", {
+            team_member_id: pokemon_data.team_member_id
+          });
+          setTimeout(() => {
+            setMessage("Please wait for your turn...");
+            setMove("wait-for-turn");
+          }, 2000);
         }
       }}
     >
@@ -68,6 +78,12 @@ const mapDispatchToProps = dispatch => {
     },
     backToMove: () => {
       dispatch(setMove("select-move")); // for showing the initial controls UI (the Fight or Switch buttons)
+    },
+    setMessage: message => {
+      dispatch(setMessage(message));
+    },
+    setMove: move => {
+      dispatch(setMove(move));
     }
   };
 };
