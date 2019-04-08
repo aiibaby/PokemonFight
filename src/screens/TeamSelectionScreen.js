@@ -30,18 +30,18 @@ class TeamSelectionScreen extends Component {
     this.backgroundSound = null;
   }
   
-  async componentDidMount() {
-    try {
-      this.backgroundSound = new Audio.Sound();
-      await this.backgroundSound.loadAsync(
-        require("../assets/sounds/background/final-road.mp3")
-      );
-      await this.backgroundSound.setIsLoopingAsync(true);
-      await this.backgroundSound.playAsync();
-    } catch (error) {
-      console.log("error loading background sound: ", error);
-    }
-  }
+  // async componentDidMount() {
+  //   try {
+  //     this.backgroundSound = new Audio.Sound();
+  //     await this.backgroundSound.loadAsync(
+  //       require("../assets/sounds/background/final-road.mp3")
+  //     );
+  //     await this.backgroundSound.setIsLoopingAsync(true);
+  //     await this.backgroundSound.playAsync();
+  //   } catch (error) {
+  //     console.log("error loading background sound: ", error);
+  //   }
+  // }
 
   render() {
     const { selected_pokemon } = this.props;
@@ -49,7 +49,7 @@ class TeamSelectionScreen extends Component {
       <View style={styles.container}>
         <CustomText styles={[styles.headerText]}>Select your team</CustomText>
 
-        {selected_pokemon.length == 1 && (
+        {selected_pokemon.length == 2 && (
           <View>
             {this.state.is_loading && (
               <View style={styles.loadingContainer}>
@@ -119,7 +119,7 @@ class TeamSelectionScreen extends Component {
     const username = navigation.getParam("username"); // get the username passed from the login screen
 
     this.pusher = new Pusher("34e87c06e0771c12f0e4", {
-      authEndpoint: "https://d45dc7ae.ngrok.io/pusher/auth",
+      authEndpoint: "https://ce7d0629.ngrok.io/pusher/auth",
       cluster: "us3",
       encrypted: true,
       auth: {
@@ -175,15 +175,14 @@ class TeamSelectionScreen extends Component {
 
 const mapStateToProps = ({ team_selection }) => {
   const { pokemon, selected_pokemon } = team_selection;
-  // return pokemon and selected_pokemon as props for this component
+
   return {
-    pokemon, // all the Pokemon available for selection (a copy of src/data/pokemon_data.js)
-    selected_pokemon // array of selected Pokemon
+    pokemon,
+    selected_pokemon 
   };
 }
 
 const mapDispatchToProps = dispatch => {
-  // for updating the value of team and pokemon in src/reducers/BattleReducer.js
   return {
     setTeam: team => {
       dispatch(setTeam(team));

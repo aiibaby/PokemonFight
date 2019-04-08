@@ -1,17 +1,19 @@
-import React, { Component }from "react";
-import { TouchableOpacity, FlatList, Alert} from "react-native";
+import React, { Component } from "react";
+import { TouchableOpacity, FlatList, Alert } from "react-native";
 import CustomText from "../CustomText";
+
 import { connect } from "react-redux";
-import { Audio } from "expo";
 import {
-  setOpponentPokemonHealth, // for setting the current opponent Pokemon's health
-  removePokemonFromOpponentTeam, // for removing the current opponent Pokemon from the opponent team
-  setOpponentPokemon, // for setting the current opponent Pokemon after the previous one has fainted
-  setMove, // for going back to the initial controls UI after the opponent Pokemon has fainted
+  setMove,
+  setOpponentPokemonHealth,
+  removePokemonFromOpponentTeam,
+  setOpponentPokemon,
   setMessage
 } from "../../actions";
+
 import getMoveEffectivenessAndDamage from "../../helpers/getMoveEffectivenessAndDamage";
 
+import { Audio } from "expo";
 
 class MovesList extends Component {
   render() {
@@ -26,84 +28,85 @@ class MovesList extends Component {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.container}
-            onPress={() => {this.selectMove.bind(this, item)}}>
+            onPress={this.selectMove.bind(this, item)}
+          >
             <CustomText styles={styles.label}>{item.title}</CustomText>
           </TouchableOpacity>
         )}
       />
     );
-  };
-}
-
-selectMove = async item => {
-  const {
-    moves,
-    opponent_pokemon,
-    opponent_pokemon_teams,
-    setOpponentPokemonHealth,
-    removePokemonFromOpponentTeam,
-    myusername,
-    setOpponentPokemon,
-    setMove,
-    pokemon,
-    opponents_channel,
-    navigation,
-    setMessage
-  } = this.props; 
-
-  let { damage, effectiveness } = getMoveEffectivenessAndDamage(item, opponent_pokemon);
-  let health = opponent_pokemon.current_hp - damage;
-
-  let message = `${pokemon.label} used ${item.title}! ${effectiveness}`;
-  setMessage(message)
-
-  opponents_channel.trigger("client-pokemon-attacked", {
-    team_member_id: opponent_pokemon.team_member_id,
-    message: message,
-    health: health
-  });
-
-
-  setOpponentPokemonHealth(opponent_pokemon.team_member_id, health); // update the opponent Pokemon's health
-
-  if (health < 1) { // opponent Pokemon has fainted
-    setOpponentPokemonHealth(opponent_pokemon.team_member_id, 0); // set health to zero so health bar is not all red
-    removePokemonFromOpponentTeam(opponent_pokemon.team_member_id);
-
-    try {
-      let crySound = new Audio.Sound();
-      await crySound.loadAsync(opponent_pokemon.cry);
-      await crySound.playAsync();
-    } catch (error) {
-      console.log("error loading cry: ", error);
-    };
-
-    opponent_pokemon_teams.splice(0, 1);
   }
 
-  if (opponent_pokemon_teams.length == 0) {
-    Alert.alert(
-      "Game Over!",
-      "You Win!",
-      [
-        {
-          text: 'Play Again',
-          onPress: () => navigation.navigate("Login", {
-            username: myusername
-          }),
-          style: 'cancel',
-        },
-        {text: 'Back to Home Page', onPress: () => navigation.navigate("Login")},
-      ],
-      { cancelable: false}
+  selectMove = async item => {
+    const {
+      moves,
+      opponent_pokemon,
+      opponent_pokemon_teams,
+      setOpponentPokemonHealth,
+      backToMove,
+      pokemon,
+      setMessage,
+      setMove,
+      navigation,
+      removePokemonFromOpponentTeam,
+      setOpponentPokemon,
+      opponents_channel
+    } = this.props;
+
+    let { effectiveness, damage } = getMoveEffectivenessAndDamage(
+      item,
+      opponent_pokemon
     );
-  } else {
-    setTimeout(() => {
-      setMessage("Please wait for your turn...");
-      setMove("wait-for-turn");
-    }, 1500);
+    let health = opponent_pokemon.current_hp - damage;
+
+    let message = `${pokemon.label} used ${item.title}! ${effectiveness}`;
+
+    setMessage(message);
+
+    opponents_channel.trigger("client-pokemon-attacked", {
+      team_member_id: opponent_pokemon.team_member_id,
+      message: message,
+      health: health
+    });
+
+    setOpponentPokemonHealth(opponent_pokemon.team_member_id, health);
+
+    if (health < 1) {
+      setOpponentPokemonHealth(opponent_pokemon.team_member_id, 0);
+      removePokemonFromOpponentTeam(opponent_pokemon.team_member_id);
+
+      try {
+        let crySound = new Audio.Sound();
+        await crySound.loadAsync(opponent_pokemon.cry);
+        await crySound.playAsync();
+      } catch (error) {
+        console.log("error loading cry: ", error);
+      }
+      opponent_pokemon_teams.splice(0, 1);
+    }
+
+    if (opponent_pokemon_teams.length == 0) {
+      Alert.alert(
+        "Game Over!",
+        "You Win!",
+        [
+          {
+            text: 'Play Again',
+            onPress: () => navigation.navigate("Login"),
+            style: 'cancel',
+          },
+          {text: 'Back to Home Page', onPress: () => navigation.navigate("Login")},
+        ],
+        { cancelable: false}
+      );
+    } else {
+      setTimeout(() => {
+        setMessage("Please wait for your turn...");
+        setMove("wait-for-turn");
+      }, 1500);
+    }
   }
-};
+}
 
 const styles = {
   container: {
@@ -117,41 +120,41 @@ const styles = {
     backgroundColor: "#ffd43b",
     marginBottom: 10
   },
+
   label: {
     fontSize: 14
   }
 };
 
 const mapStateToProps = ({ battle }) => {
-  const { opponent_pokemon, pokemon} = battle;
+  const { opponent_pokemon, pokemon } = battle;
 
   return {
     opponent_pokemon,
-    pokemon,
+    pokemon
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
+    backToMove: () => {
+      dispatch(setMove("select-move"));
+    },
     setOpponentPokemonHealth: (team_member_id, health) => {
       dispatch(setOpponentPokemonHealth(team_member_id, health));
     },
-
     removePokemonFromOpponentTeam: team_member_id => {
       dispatch(removePokemonFromOpponentTeam(team_member_id));
     },
-
     setOpponentPokemon: () => {
       dispatch(setOpponentPokemon());
     },
-    setMove: move => {
-      dispatch(setMove(move));
-    },
-    backtoMove: () => {
-      dispatch(setMove("select-move"));
-    },
+
     setMessage: message => {
       dispatch(setMessage(message));
+    },
+    setMove: move => {
+      dispatch(setMove(move));
     }
   };
 };

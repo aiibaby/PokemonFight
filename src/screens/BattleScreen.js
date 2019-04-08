@@ -40,11 +40,9 @@ class BattleScreen extends Component {
     this.opponents_channel = null;
     this.backgroundSound = null;
     this.state = {
-      opponent_pokemon_teams: [],
-      my_username: ""
+      opponent_pokemon_teams: []
     }
   }
-
 
   async componentDidMount() {
     const {
@@ -59,7 +57,6 @@ class BattleScreen extends Component {
       removePokemonFromTeam
     } = this.props;
     let pusher = navigation.getParam("pusher");
-    const my_username = navigation.getParam("username")
 
     const { username, pokemon_ids, team_member_ids } = navigation.getParam(
       "opponent"
@@ -103,15 +100,14 @@ class BattleScreen extends Component {
     setOpponentTeam(sorted_opponent_team);
     setOpponentPokemon(sorted_opponent_team[0]);
     this.setState({
-      opponent_pokemon_teams: sorted_opponent_team,
-      my_username: my_username
+      opponent_pokemon_teams: sorted_opponent_team
     })
 
     this.opponents_channel = pusher.subscribe(`private-user-${username}`);
     this.opponents_channel.bind("pusher:subscription_error", status => {
       Alert.alert(
         "Error",
-        "Subscription error occurred. Please restart the app"
+        "Network Issue. Please restart the app"
       );
     });
 
@@ -126,7 +122,7 @@ class BattleScreen extends Component {
 
     let my_channel = navigation.getParam("my_channel");
 
-    my_channel.bind("client-switched-pokemon", async({ team_member_id }) => {
+    my_channel.bind("client-switched-pokemon", async ({ team_member_id }) => {
       let pokemon = sorted_opponent_team.find(item => {
         return item.team_member_id == team_member_id;
       });
@@ -160,11 +156,12 @@ class BattleScreen extends Component {
           return item.team_member_id == data.team_member_id;
         });
 
-        setTimeout(async() => {
+        setTimeout(async () => {
           setPokemonHealth(data.team_member_id, 0);
 
           setMessage(`${fainted_pokemon.label} fainted`);
           removePokemonFromTeam(data.team_member_id);
+
           try {
             let crySound = new Audio.Sound();
             await crySound.loadAsync(fainted_pokemon.cry);
@@ -177,13 +174,11 @@ class BattleScreen extends Component {
         if (team.length == 0) {
           Alert.alert(
             "Game Over!",
-            "You loss!",
+            "You lose!",
             [
               {
                 text: 'Play Again',
-                onPress: () => navigation.navigate("Login", {
-                  username: my_username
-                }),
+                onPress: () => navigation.navigate("Login"),
                 style: 'cancel',
               },
               {text: 'Back to Home Page', onPress: () => navigation.navigate("Login")},
@@ -197,17 +192,16 @@ class BattleScreen extends Component {
         }
       }
     });
-    
-    try {
-      this.backgroundSound = new Audio.Sound();
-      await this.backgroundSound.loadAsync(
-        require("../assets/sounds/background/rival.mp3")
-      );
-      await this.backgroundSound.setIsLoopingAsync(true);
-      await this.backgroundSound.playAsync();
-    } catch (error) {
-      console.log("error loading background sound: ", error);
-    }
+    // try {
+    //   this.backgroundSound = new Audio.Sound();
+    //   await this.backgroundSound.loadAsync(
+    //     require("../assets/sounds/background/rival.mp3")
+    //   );
+    //   await this.backgroundSound.setIsLoopingAsync(true);
+    //   await this.backgroundSound.playAsync();
+    // } catch (error) {
+    //   console.log("error loading background sound: ", error);
+    // }
   }
 
   render() {
@@ -218,7 +212,6 @@ class BattleScreen extends Component {
       pokemon,
       opponent_pokemon,
       backToMove,
-      navigation,
       message
     } = this.props;
 
@@ -309,7 +302,6 @@ class BattleScreen extends Component {
                 moves={pokemon.moves}
                 opponents_channel={this.opponents_channel}
                 opponent_pokemon_teams={this.state.opponent_pokemon_teams}
-                myusername={this.state.my_username}
                 navigation={this.props.navigation}
               />
             )}
