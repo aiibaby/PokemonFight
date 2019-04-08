@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component }from "react";
 import { TouchableOpacity, FlatList, Alert} from "react-native";
 import CustomText from "../CustomText";
 import { connect } from "react-redux";

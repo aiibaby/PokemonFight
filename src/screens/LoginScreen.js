@@ -14,6 +14,7 @@ export default class LoginScreen extends Component {
   };
 
   constructor(props) {
+    super(props);
     this.backgroundSound = null;
   };
 
