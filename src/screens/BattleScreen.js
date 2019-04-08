@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { connect } from "react-redux";
 
 import { Ionicons } from "@expo/vector-icons";
+import { Audio } from "expo";
 
 import CustomText from "../components/CustomText";
 import PokemonFullSprite from "../components/PokemonFullSprite";
@@ -37,6 +38,7 @@ class BattleScreen extends Component {
   constructor(props) {
     super(props);
     this.opponents_channel = null;
+    this.backgroundSound = null;
     this.state = {
       opponent_pokemon_teams: [],
       my_username: ""
@@ -124,7 +126,7 @@ class BattleScreen extends Component {
 
     let my_channel = navigation.getParam("my_channel");
 
-    my_channel.bind("client-switched-pokemon", ({ team_member_id }) => {
+    my_channel.bind("client-switched-pokemon", async({ team_member_id }) => {
       let pokemon = sorted_opponent_team.find(item => {
         return item.team_member_id == team_member_id;
       });
@@ -132,16 +134,24 @@ class BattleScreen extends Component {
       setMessage(`Opponent changed Pokemon to ${pokemon.label}`);
       setOpponentPokemon(pokemon);
 
+      try {
+        let crySound = new Audio.Sound();
+        await crySound.loadAsync(pokemon.cry);
+        await crySound.playAsync();
+      } catch (error) {
+        console.log("error loading cry: ", error);
+      }
+
       setTimeout(() => {
         setMove("select-move");
       }, 1500);
     });
 
     my_channel.bind("client-pokemon-attacked", data => {
+      setPokemonHealth(data.team_member_id, data.health);
       setMessage(data.message);
 
       setTimeout(() => {
-        setPokemonHealth(data.team_member_id, data.health);
         setMove("select-move");
       }, 1500);
 
@@ -150,11 +160,18 @@ class BattleScreen extends Component {
           return item.team_member_id == data.team_member_id;
         });
 
-        setTimeout(() => {
-          setPokemonHealth(data.team_member_id, 0); // new
+        setTimeout(async() => {
+          setPokemonHealth(data.team_member_id, 0);
 
           setMessage(`${fainted_pokemon.label} fainted`);
           removePokemonFromTeam(data.team_member_id);
+          try {
+            let crySound = new Audio.Sound();
+            await crySound.loadAsync(fainted_pokemon.cry);
+            await crySound.playAsync();
+          } catch (error) {
+            console.log("error loading cry: ", error);
+          }
         }, 1000);
         team.splice(0, 1);
         if (team.length == 0) {
@@ -180,6 +197,17 @@ class BattleScreen extends Component {
         }
       }
     });
+    
+    try {
+      this.backgroundSound = new Audio.Sound();
+      await this.backgroundSound.loadAsync(
+        require("../assets/sounds/background/rival.mp3")
+      );
+      await this.backgroundSound.setIsLoopingAsync(true);
+      await this.backgroundSound.playAsync();
+    } catch (error) {
+      console.log("error loading background sound: ", error);
+    }
   }
 
   render() {
@@ -211,6 +239,8 @@ class BattleScreen extends Component {
                 spriteFront={opponent_pokemon.front}
                 spriteBack={opponent_pokemon.back}
                 orientation={"front"}
+                isAlive={opponent_pokemon.current_hp > 0}
+                currentHealth={opponent_pokemon.current_hp}
               />
             </View>
           )}
@@ -228,6 +258,8 @@ class BattleScreen extends Component {
                 spriteFront={pokemon.front}
                 spriteBack={pokemon.back}
                 orientation={"back"}
+                isAlive={pokemon.current_hp > 0}
+                currentHealth={pokemon.current_hp}
               />
             </View>
           )}

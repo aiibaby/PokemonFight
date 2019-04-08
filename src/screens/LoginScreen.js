@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { View, TextInput, TouchableOpacity, Image } from "react-native";
 
 import CustomText from "../components/CustomText";
+import { Audio } from "expo";
 
 export default class LoginScreen extends Component {
   static navigationOptions = {
@@ -11,6 +12,24 @@ export default class LoginScreen extends Component {
   state = {
     username: ""
   };
+
+  constructor(props) {
+    this.backgroundSound = null;
+  };
+
+  async componentDidMount() {
+    try {
+      this.backgroundSound = new Audio.Sound();
+      await this.backgroundSound.loadAsync(
+        require("../assets/sounds/background/opening.mp3")
+      );
+      await this.backgroundSound.setIsLoopingAsync(true); // make the sound loop after it's done playing
+      await this.backgroundSound.playAsync(); // start playing the sound
+    } catch (error) {
+      console.log("error loading background sound: ", error);
+    }
+  }
+
 
   render() {
     return (
@@ -43,6 +62,7 @@ export default class LoginScreen extends Component {
       this.props.navigation.navigate("TeamSelect", {
         username
       });
+      this.backgroundSound.stopAsync();
     }
   };
 }

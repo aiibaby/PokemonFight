@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { View, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import Pusher from "pusher-js/react-native";
+import { Audio } from "expo";
 
 import CustomText from "../components/CustomText";
 import PokemonList from "../components/PokemonList";
@@ -26,6 +27,20 @@ class TeamSelectionScreen extends Component {
     super(props);
     this.pusher = null;
     this.my_channel = null;
+    this.backgroundSound = null;
+  }
+  
+  async componentDidMount() {
+    try {
+      this.backgroundSound = new Audio.Sound();
+      await this.backgroundSound.loadAsync(
+        require("../assets/sounds/background/final-road.mp3")
+      );
+      await this.backgroundSound.setIsLoopingAsync(true);
+      await this.backgroundSound.playAsync();
+    } catch (error) {
+      console.log("error loading background sound: ", error);
+    }
   }
 
   render() {
