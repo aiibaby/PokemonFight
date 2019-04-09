@@ -30,18 +30,18 @@ class TeamSelectionScreen extends Component {
     this.backgroundSound = null;
   }
   
-  // async componentDidMount() {
-  //   try {
-  //     this.backgroundSound = new Audio.Sound();
-  //     await this.backgroundSound.loadAsync(
-  //       require("../assets/sounds/background/final-road.mp3")
-  //     );
-  //     await this.backgroundSound.setIsLoopingAsync(true);
-  //     await this.backgroundSound.playAsync();
-  //   } catch (error) {
-  //     console.log("error loading background sound: ", error);
-  //   }
-  // }
+  async componentDidMount() {
+    try {
+      this.backgroundSound = new Audio.Sound();
+      await this.backgroundSound.loadAsync(
+        require("../assets/sounds/background/final-road.mp3")
+      );
+      await this.backgroundSound.setIsLoopingAsync(true);
+      await this.backgroundSound.playAsync();
+    } catch (error) {
+      console.log("error loading background sound: ", error);
+    }
+  }
 
   render() {
     const { selected_pokemon } = this.props;
@@ -119,7 +119,7 @@ class TeamSelectionScreen extends Component {
     const username = navigation.getParam("username"); // get the username passed from the login screen
 
     this.pusher = new Pusher("34e87c06e0771c12f0e4", {
-      authEndpoint: "https://ce7d0629.ngrok.io/pusher/auth",
+      authEndpoint: "https://81bf8693.ngrok.io/pusher/auth",
       cluster: "us3",
       encrypted: true,
       auth: {

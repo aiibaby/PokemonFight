@@ -1,6 +1,6 @@
 import { SELECTED_POKEMON_MARK, CURRENT_POKEMON_SET, TEAM_SET, SET_OPPONENT_TEAM, SET_MOVE, SET_OPPONENT_POKEMON, SET_OPPONENT_POKEMON_HEALTH, REMOVE_POKEMON_FROM_OPPONENT_TEAM, SET_POKEMON_HEALTH, SET_MESSAGE, REMOVE_POKEMON_FROM_TEAM} from "./types";
 
-export const selectPokemon = (id, pokemon_data, is_selected) => { // accepts the Pokemon ID, Pokemon object, and a boolean representing whether it's selected or not
+export const selectPokemon = (id, pokemon_data, is_selected) => { 
     return {
     type: SELECTED_POKEMON_MARK,
     id,
@@ -9,42 +9,42 @@ export const selectPokemon = (id, pokemon_data, is_selected) => { // accepts the
     };
 };
 
-export const setPokemon = pokemon => { // accepts a single Pokemon object
+export const setPokemon = pokemon => { 
     return {
         type: CURRENT_POKEMON_SET,
         pokemon
     };
 };
 
-export const setTeam = team => { // accepts a single Pokemon object
+export const setTeam = team => { 
     return {
         type: TEAM_SET,
         team
     };
 };
 
-export const setOpponentTeam = team => { // accepts an array that contains the Pokemon data of the team selected by the user
+export const setOpponentTeam = team => { 
     return {
       type: SET_OPPONENT_TEAM,
       team 
     };
   };
 
-export const setMove = move => { // accepts an object containing the move data (same as what you see in src/data/moves_data.js)
+export const setMove = move => {
   return {
     type: SET_MOVE,
     move
   };
 };
 
-export const setOpponentPokemon = pokemon => { // accepts an object containing the data of the Pokemon selected by the opponent
+export const setOpponentPokemon = pokemon => { 
   return {
     type: SET_OPPONENT_POKEMON,
     pokemon
   };
 };
 
-export const setOpponentPokemonHealth = (team_member_id, health) => { // accepts the team_member_id of the opponent's Pokemon, and the new health points to be assigned
+export const setOpponentPokemonHealth = (team_member_id, health) => {
   return {
     type: SET_OPPONENT_POKEMON_HEALTH,
     team_member_id,
@@ -52,7 +52,7 @@ export const setOpponentPokemonHealth = (team_member_id, health) => { // accepts
   };
 };
 
-export const removePokemonFromOpponentTeam = team_member_id => { // accepts the team_member_id of the Pokemon to be removed from the opponent's team
+export const removePokemonFromOpponentTeam = team_member_id => { 
   return {
     type: REMOVE_POKEMON_FROM_OPPONENT_TEAM,
     team_member_id

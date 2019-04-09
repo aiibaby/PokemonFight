@@ -192,16 +192,16 @@ class BattleScreen extends Component {
         }
       }
     });
-    // try {
-    //   this.backgroundSound = new Audio.Sound();
-    //   await this.backgroundSound.loadAsync(
-    //     require("../assets/sounds/background/rival.mp3")
-    //   );
-    //   await this.backgroundSound.setIsLoopingAsync(true);
-    //   await this.backgroundSound.playAsync();
-    // } catch (error) {
-    //   console.log("error loading background sound: ", error);
-    // }
+    try {
+      this.backgroundSound = new Audio.Sound();
+      await this.backgroundSound.loadAsync(
+        require("../assets/sounds/background/rival.mp3")
+      );
+      await this.backgroundSound.setIsLoopingAsync(true);
+      await this.backgroundSound.playAsync();
+    } catch (error) {
+      console.log("error loading background sound: ", error);
+    }
   }
 
   render() {
